@@ -194,10 +194,6 @@ body {
         border-radius: 50%;
         border: 1px solid $color-black;
 
-        @media only screen and (max-width: $bp-small) {
-            grid-row: 1 / 3;
-        }
-
         @media only screen and (max-width: $bp-smallest) {
             height: 6.5rem;
             width: 6.5rem;
