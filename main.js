@@ -170,11 +170,10 @@ const checkLocalStorage = () => {
     }
     else {
         alert('Empty Storage!');
+        // Call the function to create and render the jobs on the DOM
+        createJobs(getAllJobs());
     }
 }
-
-// Call the function to create and render the jobs on the DOM
-createJobs(getAllJobs());
 
 // If local storage has data, load it
 checkLocalStorage();
