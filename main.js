@@ -169,7 +169,6 @@ const checkLocalStorage = () => {
         filterJobList();
     }
     else {
-        alert('Empty Storage!');
         // Call the function to create and render the jobs on the DOM
         createJobs(getAllJobs());
     }
