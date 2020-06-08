@@ -88,6 +88,7 @@ const addToFilterTags = event => {
         renderFilterTag();
         filterJobList();
         toggleFilterVisibility();
+        addToStorage();
     }
 }
 
@@ -114,6 +115,7 @@ const removeFilterTag = event => {
         filterTags.splice(jobTagIndex, 1);
         renderFilterTag();
         filterJobList();
+        addToStorage();
     }
 }
 
@@ -143,6 +145,7 @@ const clearAll = () => {
     createJobs(getAllJobs());
     renderFilterTag();
     toggleFilterVisibility();
+    addToStorage();
 }
 
 // Show/Hide the filter header 
@@ -150,10 +153,33 @@ const toggleFilterVisibility = () => {
     DOMStrings.filtersHeader.style.visibility = filterTags.length > 0 ? 'visible' : 'hidden';
 }
 
+// Add/Update the local storage
+const addToStorage = () => {
+    localStorage.setItem('jobsData', JSON.stringify(filterTags));
+}
+
 // Initial Calls
+
+// Check if local storage has data stored
+const checkLocalStorage = () => {
+    if(localStorage.getItem("jobsData")) {
+        filterTags = JSON.parse(localStorage.getItem("jobsData"));
+        console.log(Array.from(filterTags));
+        renderFilterTag();
+        filterJobList();
+    }
+    else {
+        alert('Empty Storage!');
+    }
+}
+
 // Call the function to create and render the jobs on the DOM
 createJobs(getAllJobs());
 
+// If local storage has data, load it
+checkLocalStorage();
+
+// Show/Hide the job filter header
 toggleFilterVisibility();
 
 
