@@ -1,18 +1,22 @@
 
 const DOMStrings = {
     jobsContainer: document.querySelector('.joblist'),
+    filtersHeader: document.querySelector('.search'),
     filtersContainer: document.querySelector('.search__content'),
     clearFiltersBtn: document.querySelector('.search__clear')
 }
 
+let filterTags = [];         // Store all the tags clicked by the user
+
+// Retrieve the data from JSON file
 const getAllJobs = async () => {
     const data = await fetch('./data.json')
     const jsonData = await data.json();
     return jsonData;
 }
 
+// Render the job on the DOM
 const renderJob = job => {
-    console.log(job);
     const markup = 
     `
         <li class="job ${job.new && job.featured ? 'active' : ''}">
@@ -42,6 +46,7 @@ const renderJob = job => {
     DOMStrings.jobsContainer.insertAdjacentHTML('beforeend', markup);
 }
 
+// Loop over all the jobs and pass each job to render function
 async function createJobs(data) {
     const allJobs = await data;
     allJobs.forEach(job => {
@@ -49,11 +54,9 @@ async function createJobs(data) {
     });
 }
 
-createJobs(getAllJobs());
-
+// Render the tags of the job
 const renderTags = job => {
-    let tags = Array.from(parseTags(job));
-    console.log(tags);
+    let tags = parseTags(job);
     let markup = '';
 
     tags.forEach(tag => {
@@ -63,6 +66,7 @@ const renderTags = job => {
     return markup;
 }
 
+// Parse the tags for each job
 const parseTags = job => {
     let jobTags;
     if("languages" in job && "tools" in job) {
@@ -75,3 +79,85 @@ const parseTags = job => {
 
     return jobTags;
 }
+
+// Add tags to array
+const addToFilterTags = event => {
+    if(event.target.matches('.job__tags--item')) {
+        const jobTag = event.target.textContent;
+        if(!filterTags.includes(jobTag)) filterTags.push(jobTag);
+        renderFilterTag();
+        filterJobList();
+        toggleFilterVisibility();
+    }
+}
+
+// Render the tags in the filter container
+const renderFilterTag = () => {
+    DOMStrings.filtersContainer.innerHTML = '';
+    filterTags.forEach(tag => {
+        const markup = 
+        `
+            <div class="search__item">
+                <div class="search__item--category">${tag}</div>
+                <div class="search__item--delete"><i class="fas fa-times"></i></div>
+            </div>
+        `;
+        DOMStrings.filtersContainer.insertAdjacentHTML('beforeend', markup);
+    });
+}
+
+// Delete the tag from the filter container and update the tags, jobs
+const removeFilterTag = event => {
+    if(event.target.matches('.search__item--delete, .search__item--delete *')) {
+        const jobTag = event.target.parentElement.firstElementChild.textContent;
+        const jobTagIndex = filterTags.findIndex(cur => cur === jobTag);
+        filterTags.splice(jobTagIndex, 1);
+        renderFilterTag();
+        filterJobList();
+    }
+}
+
+// Update the jobs based on filters
+const filterJobList = async () => {
+    const allJobs = await getAllJobs();
+    const filteredJobs = [];
+
+    allJobs.forEach(job => {
+        let jobTags = parseTags(job);
+        const checkTagPresent = filterTags.every(tag => jobTags.includes(tag));
+        if(checkTagPresent) filteredJobs.push(job);
+    })
+    clearJobs();
+    createJobs(filteredJobs);
+}
+
+// Clear all the jobs
+const clearJobs = () => {
+    DOMStrings.jobsContainer.innerHTML = '';
+}
+
+// Clear the filters and render all the jobs
+const clearAll = () => {
+    filterTags.length = 0;
+    clearJobs();
+    createJobs(getAllJobs());
+    renderFilterTag();
+    toggleFilterVisibility();
+}
+
+// Show/Hide the filter header 
+const toggleFilterVisibility = () => {
+    DOMStrings.filtersHeader.style.visibility = filterTags.length > 0 ? 'visible' : 'hidden';
+}
+
+// Initial Calls
+// Call the function to create and render the jobs on the DOM
+createJobs(getAllJobs());
+
+toggleFilterVisibility();
+
+
+// Event Handlers setup
+DOMStrings.jobsContainer.addEventListener('click', addToFilterTags);
+DOMStrings.filtersContainer.addEventListener('click', removeFilterTag);
+DOMStrings.clearFiltersBtn.addEventListener('click', clearAll);
